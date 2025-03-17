@@ -3,6 +3,10 @@ return {
     'olimorris/codecompanion.nvim',
     config = true,
     opts = {
+      opts = {
+        -- Set debug logging
+        log_level = 'ERROR',
+      },
       adapters = {
         llama3custom = function()
           return require('codecompanion.adapters').extend('ollama', {
@@ -20,13 +24,23 @@ return {
             },
           })
         end,
+        --opts = {
+        --  allow_insecure = true,
+        --  proxy = 'http://127.0.0.1:8080',
+        --},
       },
       strategies = {
         chat = {
-          adapter = 'llama3custom',
+          adapter = 'anthropic',
+          keymaps = {
+            close = {
+              modes = { n = '<C-x>', i = '<C-x>' },
+            },
+            -- Add further custom keymaps here
+          },
         },
         inline = {
-          adapter = 'llama3custom',
+          adapter = 'anthropic',
         },
       },
     },
