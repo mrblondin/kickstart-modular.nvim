@@ -5,7 +5,7 @@ return {
     opts = {
       opts = {
         -- Set debug logging
-        log_level = 'ERROR',
+        log_level = 'DEBUG',
       },
       adapters = {
         llama3custom = function()
@@ -40,7 +40,7 @@ return {
           },
         },
         inline = {
-          adapter = 'anthropic',
+          adapter = 'openai',
         },
       },
     },
