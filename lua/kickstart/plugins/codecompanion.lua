@@ -5,11 +5,11 @@
 -- Load will use a telescope filepicker to open a previously saved chat
 
 -- create a folder to store our chats
-local Path = require 'plenary.path'
-local data_path = vim.fn.stdpath 'data'
-local save_folder = Path:new(data_path, 'cc_saves')
-if not save_folder:exists() then
-  save_folder:mkdir { parents = true }
+local function save_path()
+  local Path = require 'plenary.path'
+  local p = Path:new(vim.fn.stdpath 'data' .. '/codecompanion_chats')
+  p:mkdir { parents = true }
+  return p
 end
 
 -- telescope picker for our saved chats
@@ -18,23 +18,12 @@ vim.api.nvim_create_user_command('CodeCompanionLoad', function()
   local t_actions = require 'telescope.actions'
   local t_action_state = require 'telescope.actions.state'
 
-  -- Debug: Print the save folder path
-  local abs_path = save_folder:absolute()
-  print('Save folder path: ' .. abs_path)
-
-  -- Debug: List files in the save folder
-  local handle = io.popen('ls -la "' .. abs_path .. '"')
-  if handle then
-    local result = handle:read '*a'
-    handle:close()
-    print 'Files in save folder:'
-    print(result)
-  end
-
   local function start_picker()
     t_builtin.find_files {
       prompt_title = 'Saved CodeCompanion Chats | <c-d>: delete',
-      cwd = save_folder:absolute(),
+      cwd = save_path():absolute(),
+      -- hidden = true, -- Show hidden files
+      no_ignore = true, -- Don't respect .gitignore files
       attach_mappings = function(_, map)
         map('i', '<c-d>', function(prompt_bufnr)
           local selection = t_action_state.get_selected_entry()
@@ -64,7 +53,7 @@ vim.api.nvim_create_user_command('CodeCompanionSave', function(opts)
     vim.notify('CodeCompanionSave requires at least 1 arg to make a file name', vim.log.levels.ERROR)
   end
   local save_name = table.concat(opts.fargs, '-') .. '.md'
-  local save_path = Path:new(save_folder, save_name)
+  local save_path = save_path():joinpath(save_name)
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   save_path:write(table.concat(lines, '\n'), 'w')
   vim.notify('CodeCompanionSave saved the file', vim.log.levels.INFO)
