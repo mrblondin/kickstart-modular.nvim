@@ -69,26 +69,28 @@ return {
         log_level = 'DEBUG',
       },
       adapters = {
-        llama3custom = function()
-          return require('codecompanion.adapters').extend('ollama', {
-            name = 'llama3custom', -- Give this adapter a different name to differentiate it from the default ollama adapter
-            schema = {
-              model = {
-                default = 'llama3.2',
+        http = {
+          llama3custom = function()
+            return require('codecompanion.adapters').extend('ollama', {
+              name = 'llama3custom', -- Give this adapter a different name to differentiate it from the default ollama adapter
+              schema = {
+                model = {
+                  default = 'llama3.2',
+                },
+                num_ctx = {
+                  default = 16384,
+                },
+                num_predict = {
+                  default = -1,
+                },
               },
-              num_ctx = {
-                default = 16384,
-              },
-              num_predict = {
-                default = -1,
-              },
-            },
-          })
-        end,
-        --opts = {
-        --  allow_insecure = true,
-        --  proxy = 'http://127.0.0.1:8080',
-        --},
+            })
+          end,
+          --opts = {
+          --  allow_insecure = true,
+          --  proxy = 'http://127.0.0.1:8080',
+          --},
+        },
       },
       strategies = {
         chat = {
