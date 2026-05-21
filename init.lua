@@ -105,19 +105,6 @@ require 'lazy-bootstrap'
 -- [[ Configure and install plugins ]]
 require 'lazy-plugins'
 
--- Patch nvim-treesitter.parsers for telescope compatibility (ft_to_lang removed in newer versions)
-vim.api.nvim_create_autocmd('User', {
-  pattern = 'LazyDone',
-  once = true,
-  callback = function()
-    local ok, parsers = pcall(require, 'nvim-treesitter.parsers')
-    if ok and not parsers.ft_to_lang then
-      parsers.ft_to_lang = function(ft)
-        return vim.treesitter.language.get_lang(ft) or ft
-      end
-    end
-  end,
-})
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

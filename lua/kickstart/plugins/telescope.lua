@@ -31,6 +31,40 @@ return {
       { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
+      -- Neovim 0.11 + new nvim-treesitter removed the APIs telescope uses.
+      -- Stub the missing modules and nil-guard highlighter.new so the previewer works.
+      package.preload['nvim-treesitter.configs'] = package.preload['nvim-treesitter.configs']
+        or function()
+          return {
+            is_enabled = function(module, lang, bufnr)
+              if module ~= 'highlight' then return false end
+              local ok, parser = pcall(vim.treesitter.get_parser, bufnr, lang)
+              return ok and parser ~= nil
+            end,
+            get_module = function(name)
+              if name == 'highlight' then return { additional_vim_regex_highlighting = false } end
+            end,
+          }
+        end
+
+      local ok, parsers = pcall(require, 'nvim-treesitter.parsers')
+      if ok and type(parsers) == 'table' then
+        parsers.ft_to_lang = parsers.ft_to_lang or function(ft)
+          return vim.treesitter.language.get_lang(ft) or ft
+        end
+        parsers.get_parser = parsers.get_parser or function(bufnr, lang)
+          local pok, parser = pcall(vim.treesitter.get_parser, bufnr, lang)
+          return pok and parser or nil
+        end
+      end
+
+      -- highlighter.new crashes when passed nil (get_parser returns nil for unknown langs)
+      local orig_hl_new = vim.treesitter.highlighter.new
+      vim.treesitter.highlighter.new = function(parser, opts)
+        if not parser then return end
+        return orig_hl_new(parser, opts)
+      end
+
       -- Telescope is a fuzzy finder that comes with a lot of different things that
       -- it can fuzzy find! It's more than just a "file finder", it can search
       -- many different aspects of Neovim, your workspace, LSP, and more!
@@ -53,15 +87,6 @@ return {
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
       require('telescope').setup {
-        -- You can put your default mappings / updates / etc. in here
-        --  All the info you're looking for is in `:help telescope.setup()`
-        --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
-        -- pickers = {}
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
