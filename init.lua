@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 require 'options'
@@ -104,6 +104,20 @@ require 'lazy-bootstrap'
 
 -- [[ Configure and install plugins ]]
 require 'lazy-plugins'
+
+-- Patch nvim-treesitter.parsers for telescope compatibility (ft_to_lang removed in newer versions)
+vim.api.nvim_create_autocmd('User', {
+  pattern = 'LazyDone',
+  once = true,
+  callback = function()
+    local ok, parsers = pcall(require, 'nvim-treesitter.parsers')
+    if ok and not parsers.ft_to_lang then
+      parsers.ft_to_lang = function(ft)
+        return vim.treesitter.language.get_lang(ft) or ft
+      end
+    end
+  end,
+})
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
